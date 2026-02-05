@@ -1,3 +1,5 @@
+[file name]: config/settings.py
+[file content begin]
 """
 =============================================================================
 🎯 إعدادات التطبيق المحسنة v8.0
@@ -24,6 +26,7 @@ class Config:
     LOGS_DIR = os.path.join(BASE_DIR, 'logs')
     EXPORT_DIR = os.path.join(BASE_DIR, 'exports')
     DATA_DIR = os.path.join(BASE_DIR, 'data')
+    MODELS_DIR = os.path.join(BASE_DIR, 'models')  # إضافة جديدة
     # ====================================================
 
     # الأمان
@@ -51,14 +54,18 @@ class Config:
     
     # ML وإحصاءات
     MONTE_CARLO_SIMULATIONS = 50000
-    MARKOV_MIN_DEPTH = 3
+    MARKOV_MIN_OCCURRENCES = 3  # إضافة لتجنب الخطأ
+    
+    # إعدادات الأداء
+    ENABLE_PROFILING = False  # إضافة هذا السطر
+    MAX_MEMORY_USAGE_MB = 500  # إضافة
+    MAX_CPU_PERCENT = 80  # إضافة
     
     # إعدادات متقدمة لقاعدة البيانات
     @classmethod
-    def get_db_args(cls) -> Dict[str, Any]:
+    def get_database_config(cls) -> Dict[str, Any]:
         """إعدادات اتصال قاعدة البيانات"""
         return {
-            'url': cls.DATABASE_URL,
             'pool_size': 10,
             'max_overflow': 20,
             'pool_timeout': 30,
@@ -106,3 +113,4 @@ class Config:
                 }
             }
         }
+[file content end]
