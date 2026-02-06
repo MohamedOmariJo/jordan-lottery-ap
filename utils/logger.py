@@ -6,12 +6,13 @@
 
 import logging
 import logging.handlers
-import logging.config
+import logging.config  # هذا السطر مهم!
 import json
 from datetime import datetime
 from typing import Dict, Any, Optional
-from config.settings import Config
 import os
+
+from app import Config  # استيراد Config من app.py
 
 class AppLogger:
     """نظام Logging احترافي مع features متقدمة"""
@@ -42,8 +43,46 @@ class AppLogger:
     
     def _setup_logging(self):
         """إعداد نظام Logging"""
-        logging.config.dictConfig(Config.get_logging_config())
+        logging.config.dictConfig(self.get_logging_config())
         self.logger = logging.getLogger('lottery')
+    
+    def get_logging_config(self):
+        """الحصول على إعدادات Logging"""
+        return {
+            'version': 1,
+            'disable_existing_loggers': False,
+            'formatters': {
+                'detailed': {
+                    'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    'datefmt': '%Y-%m-%d %H:%M:%S'
+                },
+                'simple': {
+                    'format': '%(levelname)s: %(message)s'
+                }
+            },
+            'handlers': {
+                'file': {
+                    'class': 'logging.handlers.RotatingFileHandler',
+                    'filename': os.path.join(Config.LOGS_DIR, 'app.log'),
+                    'maxBytes': 10485760,  # 10MB
+                    'backupCount': 5,
+                    'formatter': 'detailed',
+                    'level': 'INFO'
+                },
+                'console': {
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'simple',
+                    'level': 'WARNING'
+                }
+            },
+            'loggers': {
+                'lottery': {
+                    'handlers': ['file', 'console'],
+                    'level': 'INFO',
+                    'propagate': True
+                }
+            }
+        }
     
     def start_operation(self, operation_name: str, metadata: Optional[Dict] = None):
         """بدء عملية جديدة مع تتبع"""
@@ -197,7 +236,8 @@ class AppLogger:
     
     def export_logs(self, days: int = 7) -> str:
         """تصدير السجلات لعدد معين من الأيام"""
-        cutoff_date = datetime.now().timestamp() - (days * 86400)
+        import datetime as dt
+        cutoff_date = datetime.now() - dt.timedelta(days=days)
         log_file = os.path.join(Config.LOGS_DIR, 'app.log')
         
         filtered_logs = []
@@ -207,9 +247,9 @@ class AppLogger:
                     try:
                         # تحليل timestamp من السجل
                         log_time_str = line.split(' - ')[0]
-                        log_time = datetime.strptime(log_time_str, Config.DATETIME_FORMAT)
+                        log_time = datetime.strptime(log_time_str, '%Y-%m-%d %H:%M:%S')
                         
-                        if log_time.timestamp() >= cutoff_date:
+                        if log_time >= cutoff_date:
                             filtered_logs.append(line.strip())
                     except:
                         continue
