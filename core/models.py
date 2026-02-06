@@ -14,9 +14,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import warnings
+from itertools import chain  # إضافة مهمة
+
 warnings.filterwarnings('ignore')
 
-from config.settings import Config
 from utils.logger import logger
 from utils.performance import PerformanceBenchmark
 
@@ -311,6 +312,8 @@ class LotteryPredictor:
     def _save_model(self, model_name: str):
         """حفظ النموذج للاستخدام المستقبلي"""
         import os
+        from app import Config  # استيراد Config من app.py
+        
         os.makedirs(Config.MODELS_DIR, exist_ok=True)
         
         model_path = os.path.join(Config.MODELS_DIR, f'{model_name}.pkl')
@@ -322,6 +325,7 @@ class LotteryPredictor:
     def load_model(self, model_name: str):
         """تحميل نموذج محفوظ"""
         import os
+        from app import Config  # استيراد Config من app.py
         
         model_path = os.path.join(Config.MODELS_DIR, f'{model_name}.pkl')
         scaler_path = os.path.join(Config.MODELS_DIR, f'{model_name}_scaler.pkl')
